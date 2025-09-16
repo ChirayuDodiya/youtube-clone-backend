@@ -153,8 +153,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1,
       },
     },
     {
@@ -227,6 +227,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;
+
+  if(newPassword===oldPassword){
+    throw new ApiError(400, "newPassword and oldPassword are same");
+  }
 
   if (!(newPassword === confirmPassword)) {
     throw new ApiError(400, "newPassword and confirmPassword are not same");
@@ -312,7 +316,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   }
   //TODO: delete old image - assignment
 
-  const coverImage = await uploadOnCloudinary(avatarLocalPath);
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!coverImage.url) {
     throw new ApiError(400, "error while uploading on cover image");
